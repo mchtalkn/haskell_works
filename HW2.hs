@@ -14,6 +14,7 @@ import Parser
 -- this file. Feel free to import other modules, especially Data.List!
 
 foldAndPropagateConstants :: [(String, ExprV)] -> [(String, ExprV)]
+foldAndPropagateConstants a = myFNP (reverse a) []
 foldAndPropagateConstants _ = []
 
 assignCommonSubexprs :: ExprV -> ([(String, ExprV)], ExprV)
@@ -39,3 +40,23 @@ isle (UnaryOperation Minus (UnaryOperation Minus (Leaf (Constant a))))=Leaf (Con
 isle (BinaryOperation Plus (Leaf (Constant a)) (Leaf (Constant b))) =Leaf (Constant (a+b))
 isle (BinaryOperation Times (Leaf (Constant a)) (Leaf (Constant b)))=Leaf (Constant (a*b))
 isle a=a
+
+recReplace :: [(String,ExprV)]->ExprV->ExprV
+recReplace [] a=a
+recReplace (x:y) a=recReplace (y) (replace (x,a))
+
+recIsle :: ExprV->ExprV
+recIsle (UnaryOperation Minus a)=isle(UnaryOperation Minus (recIsle a))
+recIsle (BinaryOperation Plus a b)=isle(BinaryOperation Plus (recIsle a) (recIsle b))
+recIsle (BinaryOperation Times a b)=isle(BinaryOperation Times (recIsle a) (recIsle b))
+recIsle a= a
+
+myFNP :: [(String, ExprV)] -> [(String, ExprV)]-> [(String, ExprV)]
+myFNP [] b = b
+myFNP ((s,e):y) b = myFNP y ((s,(recIsle (recReplace b e))):b)
+
+isIncludes :: Eq a=> [a]->a->Bool
+isIncludes [] _ =False
+isIncludes (x:y) a= if x==a then True else isIncludes y a
+
+findCommonLeaves ExprV->[(String,ExprV)]->[(String,ExprV)]->[(String,ExprV)]
