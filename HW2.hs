@@ -27,10 +27,11 @@ notImpl :: ExprV
 notImpl = Leaf $ Variable "Not Implemented"
 
 replace :: ((String,ExprV),ExprV)->ExprV
-replace ((x,val),Leaf (Const (Variable y))) = if x==y then val else y
+replace ((x,val),Leaf  (Variable y)) = if x==y then val else Leaf (Variable y)
 replace ((x,val),Leaf y) = Leaf y
-replace ((x,val),UnaryOperation UnaryOperator a)=replace((x,val), a)
-replace ((x,val),UnaryOperation UnaryOperator a b)= UnaryOperation UnaryOperator (replace((x,val),a)) (replace((x,val)),b)
+replace ((x,val),UnaryOperation Minus a)=replace((x,val), a)
+replace ((x,val),BinaryOperation Plus a b)= BinaryOperation Plus (replace((x,val),a)) (replace((x,val),b))
+replace ((x,val),BinaryOperation Times a b)= BinaryOperation Times (replace((x,val),a)) (replace((x,val),b))
 
 isle :: ExprV->ExprV
 isle (Leaf (Constant a)) =Leaf (Constant a)
