@@ -17,12 +17,24 @@ foldAndPropagateConstants :: [(String, ExprV)] -> [(String, ExprV)]
 foldAndPropagateConstants _ = []
 
 assignCommonSubexprs :: ExprV -> ([(String, ExprV)], ExprV)
-assignCommonSubexprs _ = ([], notImpl) 
+assignCommonSubexprs _ = ([], notImpl)
 
 reducePoly :: ExprV -> ExprV
-reducePoly _ = notImpl 
+reducePoly _ = notImpl
 
 -- an extra dummy variable, so as to not crash the GUI
 notImpl :: ExprV
 notImpl = Leaf $ Variable "Not Implemented"
 
+replace :: ((String,ExprV),ExprV)->ExprV
+replace ((x,val),Leaf (Const (Variable y))) = if x==y then val else y
+replace ((x,val),Leaf y) = Leaf y
+replace ((x,val),UnaryOperation UnaryOperator a)=replace((x,val), a)
+replace ((x,val),UnaryOperation UnaryOperator a b)= UnaryOperation UnaryOperator (replace((x,val),a)) (replace((x,val)),b)
+
+isle :: ExprV->ExprV
+isle (Leaf (Constant a)) =Leaf (Constant a)
+isle (UnaryOperation Minus (UnaryOperation Minus (Leaf (Constant a))))=Leaf (Constant a)
+isle (BinaryOperation Plus (Leaf (Constant a)) (Leaf (Constant b))) =Leaf (Constant (a+b))
+isle (BinaryOperation Times (Leaf (Constant a)) (Leaf (Constant b)))=Leaf (Constant (a*b))
+isle a=a
