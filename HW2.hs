@@ -22,7 +22,7 @@ assignCommonSubexprs a= assignHelper [] a 0
 assignCommonSubexprs _ = ([], notImpl)
 
 reducePoly :: ExprV -> ExprV
-reducePoly a = let b=expressionToPoly a in let c=clean (polyToStr (snd b) 0 (fst b)) in replace((("minus"++(fst b)),(Leaf (Variable ("-"++(fst b))) )), (parse c))
+reducePoly a = let b=expressionToPoly a in tuplesToExpr (reverse (polyToTuples (snd b) 0 )) (fst b)
 reducePoly _ = notImpl
 
 -- an extra dummy variable, so as to not crash the GUI
@@ -109,6 +109,28 @@ expressionToPoly (Leaf (Variable a))=(a,[0,1])
 expressionToPoly (UnaryOperation Minus a) =let b= expressionToPoly a in ((fst b), polyTimes [-1] (snd b))
 expressionToPoly (BinaryOperation Plus a b)=let c=expressionToPoly a in let d = expressionToPoly b in if ((fst c)=="") then ((fst d),polyPlus (snd c) (snd d)) else ((fst c),polyPlus (snd c) (snd d))
 expressionToPoly (BinaryOperation Times a b)=let c=expressionToPoly a in let d = expressionToPoly b in if ((fst c)=="") then ((fst d),polyTimes (snd c) (snd d)) else ((fst c),polyTimes (snd c) (snd d))
+
+
+polyToTuples :: [Int]->Int-> [(Int,Int)]
+polyToTuples [] _ =[]
+polyToTuples (x:y) m= if (x/=0) then ((x,m):(polyToTuples y (m+1)) ) else polyToTuples y (m+1)
+
+polyToExpr::[Int]->String->Int->ExprV
+polyToExpr (0:y) s m = polyToExpr y s (m+1)
+polyToExpr [a] s m =intToTerm a s m
+polyToExpr (0:y) s m = polyToExpr y s (m+1)
+polyToExpr (x:y) s m =BinaryOperation Plus (intToTerm x s m) (polyToExpr y s (m+1))
+
+tuplesToExpr :: [(Int,Int)]->String->ExprV
+tuplesToExpr [(j,k)] s= intToTerm j s k
+tuplesToExpr ((j,k):l) s= BinaryOperation Plus (tuplesToExpr l s) (intToTerm j s k)
+
+intToTerm::Int->String->Int->ExprV
+intToTerm k s 0= Leaf (Constant k)
+intToTerm 1 s 1= Leaf (Variable s)
+intToTerm (-1) s 1=Leaf (Variable ("-"++s))
+intToTerm k s m = BinaryOperation Times (intToTerm k s (m-1)) (Leaf (Variable s))
+
 
 polyToStr ::[Int] -> Int ->String->String
 polyToStr [0] 0 _ = "0"
