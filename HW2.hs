@@ -22,6 +22,7 @@ assignCommonSubexprs a= assignHelper [] a 0
 assignCommonSubexprs _ = ([], notImpl)
 
 reducePoly :: ExprV -> ExprV
+reducePoly a = let b=expressionToPoly a in let c=clean (polyToStr (snd b) 0 (fst b)) in replace((("minus"++(fst b)),(Leaf (Variable ("-"++(fst b))) )), (parse c))
 reducePoly _ = notImpl
 
 -- an extra dummy variable, so as to not crash the GUI
@@ -91,3 +92,37 @@ assign _ a=a
 recAssign:: [(String,ExprV)]->ExprV->ExprV
 recAssign [] a=a
 recAssign (x:y) a=recAssign y (assign x a)
+
+polyPlus:: [Int]->[Int]->[Int]
+polyPlus [] a= a
+polyPlus a [] = a
+polyPlus (x:y) (j:k)= ((x+j): (polyPlus y k))
+
+
+polyTimes :: [Int]->[Int]->[Int]
+polyTimes [] a = []
+polyTimes (x:y) a =polyPlus (map (*x) a) (polyTimes y (0:a))
+
+expressionToPoly :: ExprV->(String,[Int])
+expressionToPoly (Leaf (Constant a))=("",[a])
+expressionToPoly (Leaf (Variable a))=(a,[0,1])
+expressionToPoly (UnaryOperation Minus a) =let b= expressionToPoly a in ((fst b), polyTimes [-1] (snd b))
+expressionToPoly (BinaryOperation Plus a b)=let c=expressionToPoly a in let d = expressionToPoly b in if ((fst c)=="") then ((fst d),polyPlus (snd c) (snd d)) else ((fst c),polyPlus (snd c) (snd d))
+expressionToPoly (BinaryOperation Times a b)=let c=expressionToPoly a in let d = expressionToPoly b in if ((fst c)=="") then ((fst d),polyTimes (snd c) (snd d)) else ((fst c),polyTimes (snd c) (snd d))
+
+polyToStr ::[Int] -> Int ->String->String
+polyToStr [0] 0 _ = "0"
+polyToStr [] _  _ =""
+polyToStr (0:a) m s= polyToStr a (m+1) s
+polyToStr (k:a) 0 s=  (show k) ++ (polyToStr a 1 s)
+polyToStr (1:a) m s="+"++s++(powerS (m-1) s)++(polyToStr a (m+1) s)
+polyToStr (-1:a) m s="+minus"++s++(powerS (m-1) s)++(polyToStr a (m+1) s)
+polyToStr (k:a) m s= if(k<0) then (show (-1*k))++"*"++"minus"++s++(powerS (m-1) s)++(polyToStr a (m+1) s) else "+"++(show k)++"*"++s++(powerS (m-1) s)++(polyToStr a (m+1) s)
+
+clean :: String->String
+clean(x:y)=if([x]=="+") then y else (x:y)
+
+powerS ::Int->String->String
+powerS 0 _=""
+powerS 1 s="*"++s
+powerS m s= "*"++s++(powerS (m-1) s)
