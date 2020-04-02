@@ -29,6 +29,10 @@ reducePoly _ = notImpl
 notImpl :: ExprV
 notImpl = Leaf $ Variable "Not Implemented"
 
+repCheck :: ((String,ExprV),ExprV)->ExprV
+repCheck ((a,(Leaf (Constant b))),c)= replace ((a,(Leaf (Constant b))),c)
+repCheck ((a,b),c)=c
+
 replace :: ((String,ExprV),ExprV)->ExprV
 replace ((x,val),Leaf  (Variable y)) = if x==y then val else Leaf (Variable y)
 replace ((x,val),Leaf y) = Leaf y
@@ -45,7 +49,7 @@ isle a=a
 
 recReplace :: [(String,ExprV)]->ExprV->ExprV
 recReplace [] a=a
-recReplace (x:y) a=recReplace (y) (replace (x,a))
+recReplace (x:y) a=recReplace (y) (repCheck (x,a))
 
 recIsle :: ExprV->ExprV
 recIsle (UnaryOperation Minus a)=isle(UnaryOperation Minus (recIsle a))
