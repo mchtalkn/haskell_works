@@ -132,7 +132,7 @@ tuplesToExpr ((j,k):l) s= BinaryOperation Plus (tuplesToExpr l s) (intToTerm j s
 intToTerm::Int->String->Int->ExprV
 intToTerm k s 0= Leaf (Constant k)
 intToTerm 1 s 1= Leaf (Variable s)
-intToTerm (-1) s 1=Leaf (Variable ("-"++s))
+intToTerm (-1) s 1=UnaryOperation Minus(Leaf (Variable (s)))
 intToTerm k s m = BinaryOperation Times (intToTerm k s (m-1)) (Leaf (Variable s))
 
 
