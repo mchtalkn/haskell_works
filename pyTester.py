@@ -16,8 +16,8 @@ def proces_input(repl,input_file,output_file,test_out):
     inp_lines = input_file.readlines()
     out_lines =[]
     for inp in inp_lines:
-        if(inp=="end"):
-            break
+        if(inp=="end" or inp=="end\n"):
+            return
         out=test_out.readline()
         repl.sendline("("+inp[:-1]+")"+"=="+"("+out[:-1]+")\n")
         _, haskell_output = repl.readline(), repl.readline()
