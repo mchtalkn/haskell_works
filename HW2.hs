@@ -14,7 +14,7 @@ import Parser
 -- this file. Feel free to import other modules, especially Data.List!
 
 foldAndPropagateConstants :: [(String, ExprV)] -> [(String, ExprV)]
-foldAndPropagateConstants a = myFNP (reverse a) []
+foldAndPropagateConstants a = reverse $ myFNP (a) []
 foldAndPropagateConstants _ = []
 
 assignCommonSubexprs :: ExprV -> ([(String, ExprV)], ExprV)
@@ -30,11 +30,11 @@ notImpl :: ExprV
 notImpl = Leaf $ Variable "Not Implemented"
 
 repCheck :: ((String,ExprV),ExprV)->ExprV
-repCheck ((a,(Leaf (Constant b))),c)= replace ((a,(Leaf (Constant b))),c)
+repCheck ((a,(Leaf (Constant b))),c)= Leaf (Constant b)
 repCheck ((a,b),c)=c
 
 replace :: ((String,ExprV),ExprV)->ExprV
-replace ((x,val),Leaf  (Variable y)) = if x==y then val else Leaf (Variable y)
+replace ((x,val),Leaf  (Variable y)) = if x==y then repCheck((x,val),Leaf (Variable y))  else Leaf (Variable y)
 replace ((x,val),Leaf y) = Leaf y
 replace ((x,val),UnaryOperation Minus a)=replace((x,val), a)
 replace ((x,val),BinaryOperation Plus a b)= BinaryOperation Plus (replace((x,val),a)) (replace((x,val),b))
@@ -55,7 +55,7 @@ isle a=a
 --lastIsle :: ExprV->ExprV
 recReplace :: [(String,ExprV)]->ExprV->ExprV
 recReplace [] a=a
-recReplace (x:y) a=recReplace (y) (repCheck (x,a))
+recReplace (x:y) a=recReplace (y) (replace (x,a))
 
 recIsle :: ExprV->ExprV
 recIsle (UnaryOperation Minus a)=isle(UnaryOperation Minus (recIsle a))
