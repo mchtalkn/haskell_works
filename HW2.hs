@@ -132,6 +132,7 @@ polyToExpr (0:y) s m = polyToExpr y s (m+1)
 polyToExpr (x:y) s m =BinaryOperation Plus (intToTerm x s m) (polyToExpr y s (m+1))
 
 tuplesToExpr :: [(Int,Int)]->String->ExprV
+tuplesToExpr [] _ =Leaf (Constant 0)
 tuplesToExpr [(j,k)] s= intToTerm j s k
 tuplesToExpr ((j,k):l) s= BinaryOperation Plus (tuplesToExpr l s) (intToTerm j s k)
 
