@@ -44,11 +44,7 @@ isle :: ExprV->ExprV
 isle (Leaf (Constant a)) =Leaf (Constant a)
 isle  (UnaryOperation Minus (Leaf (Constant 0)))=Leaf (Constant 0)
 isle (UnaryOperation Minus (UnaryOperation Minus (Leaf (Constant a))))=Leaf (Constant a)
-isle (BinaryOperation Plus (Leaf (Variable a)) (Leaf (Constant 0))) =Leaf (Variable (a))
-isle (BinaryOperation Plus (Leaf (Constant 0)) (Leaf (Variable b))) =Leaf (Variable (b))
 isle (BinaryOperation Plus (Leaf (Constant a)) (Leaf (Constant b))) =Leaf (Constant (a+b))
-isle (BinaryOperation Times (Leaf (Variable a)) (Leaf (Constant 0)))=Leaf (Constant (0))
-isle (BinaryOperation Times (Leaf (Constant 0)) (Leaf (Variable b)))=Leaf (Constant (0))
 isle (BinaryOperation Times (Leaf (Constant a)) (Leaf (Constant b)))=Leaf (Constant (a*b))
 isle a=a
 
